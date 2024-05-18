@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Model Viewer</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('renderCanvas');
+        const engine = new BABYLON.Engine(canvas, true);
+        let scene; // Declare scene here
+
+        const createScene = () => {
+            scene = new BABYLON.Scene(engine); // Assign to the global scene variable
+            const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 3, 5, new BABYLON.Vector3(0, 0, 0), scene);
+            camera.attachControl(canvas, true);
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+
+            // Load the model
+            BABYLON.SceneLoader.Append("model/", "scene.gltf", scene, () => {
+                // Model loaded
+                addHotspots(scene);
+            });
+
+            return scene;
+        };
+
+        const addHotspots = (scene) => {
+            const hotspots = [
+                {
+                    position: new BABYLON.Vector3(0.067503168404323, 0.3587141272132893, 1.445035833685749),
+                    name: "Table",
+                    description: "This is a description about the table."
+                },
+                {
+                    position: new BABYLON.Vector3(-1.4041555593545143, 0.5300845426306227, 1.1195473682037473),
+                    name: "Sofa",
+                    description: "This is a description about the Sofa."
+
+                },
+                {
+                    position: new BABYLON.Vector3(0.05560171784179113, 0.4468120450434878, -2.102478351746492),
+                    name: "Oven",
+                    description: "The Oven"
+
+                },
+                {
+                    position: new BABYLON.Vector3(1.174527586971457, 0.7197620093439825, -0.97559440864767),
+                    name: "Dining Table",
+                    description: "The Dining area"
+
+                },
+                // Add more predefined hotspots as needed
+            ];
+
+            hotspots.forEach(hotspot => {
+                createHotspot(scene, hotspot);
+            });
+        };
+
+        const createHotspot = (scene, hotspot) => {
+            const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
+            sphere.position = hotspot.position;
+            sphere.metadata = { name: hotspot.name, description: hotspot.description };
+
+            sphere.actionManager = new BABYLON.ActionManager(scene);
+            sphere.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPickTrigger,
+                () => {
+                    console.log('Hotspot Name:', hotspot.name);
+                    alert(`Hotspot clicked: ${hotspot.name}\nDescription: ${hotspot.description}`);
+                }
+            ));
+        };
+
+        createScene(); // Call createScene once
+        engine.runRenderLoop(() => {
+            scene.render();
+        });
+
+        window.addEventListener('resize', () => {
+            engine.resize();
+        });
+       
+    </script>
+</body>
+</html>
